@@ -1,0 +1,1433 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Primadonna Collection – Report Performance Organica</title>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  :root {
+    --red: #E52217;
+    --red-light: #FF5147;
+    --red-pale: #FFE7E6;
+    --white: #FFFFFF;
+    --gray-light: #F4F5F6;
+    --gray-dark: #191919;
+    --gray-text: #595959;
+    --green: #118541;
+    --blue: #5781FF;
+    --violet: #551FC4;
+    --orange: #DB5E29;
+    --nav-width: 240px;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'Figtree', sans-serif;
+    background: var(--gray-light);
+    color: var(--gray-text);
+    font-size: 13px;
+    line-height: 1.6;
+    display: flex;
+  }
+
+  /* ── SIDEBAR ────────────────────────────────────────────── */
+  .sidebar {
+    width: var(--nav-width);
+    min-height: 100vh;
+    background: var(--gray-dark);
+    position: fixed;
+    top: 0; left: 0;
+    display: flex;
+    flex-direction: column;
+    padding: 0 0 32px;
+    z-index: 100;
+  }
+  .sidebar-logo {
+    padding: 28px 20px 20px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+  }
+  .sidebar-logo img { width: 120px; }
+  .sidebar-client {
+    padding: 16px 20px 20px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+  }
+  .sidebar-client .label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: rgba(255,255,255,0.35);
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+  .sidebar-client .client-name {
+    font-size: 14px;
+    font-weight: 700;
+    color: #fff;
+    line-height: 1.2;
+  }
+  .sidebar-client .period-badge {
+    display: inline-block;
+    margin-top: 8px;
+    background: var(--red);
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 3px;
+    letter-spacing: 0.05em;
+  }
+  .nav-section { padding: 20px 0 4px 20px; }
+  .nav-section-label {
+    font-size: 9px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.25);
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+  .nav-link {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 20px 8px 0;
+    color: rgba(255,255,255,0.55);
+    text-decoration: none;
+    font-size: 12px;
+    font-weight: 500;
+    transition: color 0.2s;
+    border-radius: 0 4px 4px 0;
+    position: relative;
+  }
+  .nav-link:hover, .nav-link.active { color: #fff; }
+  .nav-link.active::before {
+    content: '';
+    position: absolute;
+    left: -20px;
+    width: 3px; height: 100%;
+    background: var(--red);
+    border-radius: 0 2px 2px 0;
+  }
+  .nav-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+    flex-shrink: 0;
+    opacity: 0.5;
+  }
+  .nav-link:hover .nav-dot, .nav-link.active .nav-dot { opacity: 1; background: var(--red); }
+  .sidebar-footer {
+    margin-top: auto;
+    padding: 16px 20px 0;
+    border-top: 1px solid rgba(255,255,255,0.08);
+  }
+  .sidebar-footer .date-label { font-size: 10px; color: rgba(255,255,255,0.3); }
+  .sidebar-footer .date-val { font-size: 11px; color: rgba(255,255,255,0.6); font-weight: 600; }
+  .sidebar-footer .source-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: rgba(255,255,255,0.07);
+    border-radius: 4px;
+    padding: 3px 7px;
+    margin: 3px 2px 0 0;
+    font-size: 9px;
+    color: rgba(255,255,255,0.45);
+    font-weight: 600;
+    letter-spacing: 0.05em;
+  }
+
+  /* ── MAIN ────────────────────────────────────────────────── */
+  .main {
+    margin-left: var(--nav-width);
+    flex: 1;
+    padding: 0;
+  }
+
+  /* ── PAGE HEADER ─────────────────────────────────────────── */
+  .page-header {
+    background: var(--white);
+    border-bottom: 1px solid #E8E9EB;
+    padding: 40px 48px 36px;
+  }
+  .page-header .eyebrow {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    font-weight: 700;
+    color: var(--red);
+    margin-bottom: 10px;
+  }
+  .page-header h1 {
+    font-size: 30px;
+    font-weight: 800;
+    color: var(--gray-dark);
+    text-transform: uppercase;
+    line-height: 1.1;
+    letter-spacing: -0.01em;
+    margin-bottom: 10px;
+  }
+  .page-header .subtitle {
+    font-size: 14px;
+    color: var(--gray-text);
+    font-weight: 400;
+    max-width: 640px;
+    line-height: 1.6;
+  }
+  .header-meta {
+    display: flex;
+    gap: 24px;
+    margin-top: 24px;
+    padding-top: 24px;
+    border-top: 1px solid #F0F1F2;
+  }
+  .header-meta-item .label-sm { font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: #999; font-weight: 600; }
+  .header-meta-item .val-sm { font-size: 13px; font-weight: 600; color: var(--gray-dark); margin-top: 2px; }
+
+  /* ── SECTION ─────────────────────────────────────────────── */
+  .section { padding: 48px 48px 40px; }
+  .section + .section { border-top: 6px solid var(--gray-light); }
+  .section-header { margin-bottom: 32px; }
+  .section-eyebrow {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    font-weight: 700;
+    color: var(--red);
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .section-eyebrow::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--red);
+    opacity: 0.25;
+    max-width: 40px;
+  }
+  .section h2 {
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--gray-dark);
+    text-transform: uppercase;
+    letter-spacing: -0.01em;
+    margin-bottom: 6px;
+  }
+  .section .section-desc {
+    font-size: 13px;
+    color: var(--gray-text);
+    max-width: 680px;
+  }
+
+  /* ── KPI CARDS ───────────────────────────────────────────── */
+  .kpi-grid {
+    display: grid;
+    gap: 16px;
+    margin-bottom: 36px;
+  }
+  .kpi-grid-4 { grid-template-columns: repeat(4, 1fr); }
+  .kpi-grid-3 { grid-template-columns: repeat(3, 1fr); }
+  .kpi-grid-2 { grid-template-columns: repeat(2, 1fr); }
+  .kpi-card {
+    background: var(--white);
+    border-radius: 8px;
+    padding: 20px 22px 18px;
+    border: 1px solid #EAEBEC;
+    position: relative;
+    overflow: hidden;
+  }
+  .kpi-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: var(--red);
+  }
+  .kpi-card.green::before { background: var(--green); }
+  .kpi-card.blue::before { background: var(--blue); }
+  .kpi-card.violet::before { background: var(--violet); }
+  .kpi-card.orange::before { background: var(--orange); }
+  .kpi-card .kpi-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-weight: 700;
+    color: #AAA;
+    margin-bottom: 8px;
+  }
+  .kpi-card .kpi-value {
+    font-size: 26px;
+    font-weight: 800;
+    color: var(--gray-dark);
+    line-height: 1;
+    margin-bottom: 6px;
+  }
+  .kpi-card .kpi-delta {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 100px;
+    background: #E8F5EE;
+    color: var(--green);
+  }
+  .kpi-card .kpi-delta.neg { background: #FEE8E7; color: var(--red); }
+  .kpi-card .kpi-delta.neutral { background: #F0F1F2; color: #666; }
+  .kpi-card .kpi-sub {
+    font-size: 11px;
+    color: #999;
+    margin-top: 8px;
+  }
+
+  /* ── CHARTS ──────────────────────────────────────────────── */
+  .chart-wrap {
+    background: var(--white);
+    border-radius: 8px;
+    border: 1px solid #EAEBEC;
+    padding: 24px;
+    margin-bottom: 24px;
+  }
+  .chart-title {
+    font-size: 12px;
+    font-weight: 800;
+    color: var(--gray-dark);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 4px;
+  }
+  .chart-subtitle {
+    font-size: 11px;
+    color: #999;
+    margin-bottom: 20px;
+  }
+  .chart-canvas-wrap { position: relative; }
+
+  /* ── TABLES ──────────────────────────────────────────────── */
+  .table-wrap {
+    background: var(--white);
+    border-radius: 8px;
+    border: 1px solid #EAEBEC;
+    overflow: hidden;
+    margin-bottom: 24px;
+  }
+  .table-header {
+    padding: 16px 20px 14px;
+    border-bottom: 1px solid #F0F1F2;
+  }
+  .table-title {
+    font-size: 12px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--gray-dark);
+    margin-bottom: 2px;
+  }
+  .table-subtitle { font-size: 11px; color: #999; }
+  table { width: 100%; border-collapse: collapse; }
+  thead th {
+    background: var(--gray-light);
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-weight: 700;
+    color: #888;
+    padding: 10px 16px;
+    text-align: left;
+    border-bottom: 1px solid #EAEBEC;
+  }
+  thead th:not(:first-child) { text-align: right; }
+  tbody td {
+    padding: 11px 16px;
+    font-size: 12px;
+    border-bottom: 1px solid #F4F5F6;
+    color: var(--gray-dark);
+    font-weight: 500;
+    vertical-align: middle;
+  }
+  tbody td:not(:first-child) { text-align: right; }
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr:hover td { background: #FAFAFA; }
+  .highlight-row td { background: #FFF2F2 !important; }
+  .highlight-row td:first-child { color: var(--red); font-weight: 700; }
+  .highlight-row { outline: 2px solid var(--red); outline-offset: -1px; }
+  .delta-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 100px;
+  }
+  .delta-pill.pos { background: #E8F5EE; color: var(--green); }
+  .delta-pill.neg { background: #FEE8E7; color: var(--red); }
+  .za-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px; height: 32px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 800;
+    color: #fff;
+  }
+  .bar-visual {
+    height: 6px;
+    border-radius: 3px;
+    display: inline-block;
+    vertical-align: middle;
+    margin-right: 8px;
+  }
+  .tag {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .tag-red { background: var(--red-pale); color: var(--red); }
+  .tag-green { background: #E8F5EE; color: var(--green); }
+  .tag-gray { background: #F0F1F2; color: #666; }
+
+  /* ── COMPARISON BLOCK ────────────────────────────────────── */
+  .compare-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
+  .compare-card {
+    background: var(--white);
+    border-radius: 8px;
+    border: 1px solid #EAEBEC;
+    padding: 20px;
+  }
+  .compare-card .period-label {
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 3px;
+    display: inline-block;
+    margin-bottom: 12px;
+  }
+  .compare-card.prev .period-label { background: #F0F1F2; color: #666; }
+  .compare-card.curr .period-label { background: var(--red-pale); color: var(--red); }
+  .compare-card .metric-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 6px 0;
+    border-bottom: 1px solid #F4F5F6;
+    font-size: 12px;
+  }
+  .compare-card .metric-row:last-child { border-bottom: none; }
+  .compare-card .metric-name { color: #888; font-weight: 500; }
+  .compare-card .metric-val { font-weight: 700; color: var(--gray-dark); font-size: 14px; }
+
+  /* ── NOTA METODOLOGICA ───────────────────────────────────── */
+  .note-box {
+    background: #FFF8F8;
+    border: 1px solid #FADBD9;
+    border-left: 4px solid var(--red);
+    border-radius: 0 6px 6px 0;
+    padding: 14px 18px;
+    margin-bottom: 16px;
+    font-size: 11.5px;
+    color: #6B2C28;
+    line-height: 1.6;
+  }
+  .note-box strong { font-weight: 700; }
+  .info-box {
+    background: #F0F4FF;
+    border: 1px solid #C8D7FF;
+    border-left: 4px solid var(--blue);
+    border-radius: 0 6px 6px 0;
+    padding: 14px 18px;
+    margin-bottom: 16px;
+    font-size: 11.5px;
+    color: #1A2C6B;
+    line-height: 1.6;
+  }
+  .source-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: var(--gray-light);
+    border: 1px solid #DDDEE0;
+    border-radius: 4px;
+    padding: 3px 9px;
+    font-size: 10px;
+    font-weight: 700;
+    color: #666;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin: 3px 3px 3px 0;
+  }
+
+  /* ── QUERY BADGE ─────────────────────────────────────────── */
+  .query-list { display: flex; flex-direction: column; gap: 6px; }
+  .query-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: var(--white);
+    border: 1px solid #EAEBEC;
+    border-radius: 6px;
+    padding: 10px 14px;
+  }
+  .query-rank {
+    width: 22px; height: 22px;
+    border-radius: 4px;
+    background: var(--gray-light);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 9px; font-weight: 800; color: #888;
+    flex-shrink: 0;
+  }
+  .query-text { font-size: 12px; font-weight: 600; color: var(--gray-dark); flex: 1; }
+  .query-metrics { display: flex; gap: 16px; }
+  .query-metric { text-align: right; }
+  .query-metric .qm-val { font-size: 12px; font-weight: 700; color: var(--gray-dark); }
+  .query-metric .qm-label { font-size: 9px; text-transform: uppercase; letter-spacing: 0.08em; color: #AAA; }
+  .pos-pill {
+    background: #EEF2FF;
+    color: var(--blue);
+    font-size: 10px; font-weight: 800;
+    padding: 2px 7px; border-radius: 4px;
+    flex-shrink: 0;
+  }
+  .pos-pill.pos1 { background: #E8F5EE; color: var(--green); }
+
+  /* ── PROGRESS BAR ────────────────────────────────────────── */
+  .prog-bar {
+    height: 4px;
+    background: #F0F1F2;
+    border-radius: 2px;
+    margin-top: 6px;
+    overflow: hidden;
+  }
+  .prog-fill { height: 100%; border-radius: 2px; background: var(--red); }
+
+  /* ── GRID CHARTS ─────────────────────────────────────────── */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+
+  /* ── FOOTER ──────────────────────────────────────────────── */
+  .page-footer {
+    background: var(--gray-dark);
+    color: rgba(255,255,255,0.4);
+    padding: 24px 48px;
+    font-size: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .page-footer strong { color: rgba(255,255,255,0.8); }
+
+  /* ── LEGEND ──────────────────────────────────────────────── */
+  .legend { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 16px; }
+  .legend-item { display: flex; align-items: center; gap: 6px; font-size: 11px; color: #666; }
+  .legend-dot { width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0; }
+
+  /* ── TIMELINE ─────────────────────────────────────────────── */
+  .timeline {
+    position: relative;
+    padding-left: 28px;
+    margin-bottom: 8px;
+  }
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 7px; top: 6px; bottom: 6px;
+    width: 2px;
+    background: linear-gradient(to bottom, var(--red), rgba(229,34,23,0.1));
+  }
+  .tl-item {
+    position: relative;
+    margin-bottom: 16px;
+  }
+  .tl-item::before {
+    content: '';
+    position: absolute;
+    left: -24px; top: 4px;
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: var(--red);
+    border: 2px solid var(--white);
+    box-shadow: 0 0 0 2px var(--red);
+  }
+  .tl-date { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--red); margin-bottom: 2px; }
+  .tl-text { font-size: 12px; font-weight: 600; color: var(--gray-dark); }
+  .tl-sub { font-size: 11px; color: #888; }
+
+  /* ── COMPETITOR BADGE ────────────────────────────────────── */
+  .comp-name { display: flex; align-items: center; gap: 8px; }
+  .comp-favicon {
+    width: 18px; height: 18px;
+    border-radius: 3px;
+    background: var(--gray-light);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 8px; font-weight: 800; color: #888;
+    flex-shrink: 0;
+  }
+
+  .section-bg { background: var(--white); }
+  .section-gray { background: var(--gray-light); }
+</style>
+</head>
+<body>
+
+<!-- ── SIDEBAR ─────────────────────────────────────────────── -->
+<nav class="sidebar">
+  <div class="sidebar-logo">
+    <img src="https://mocainteractive.com/assets/svg/logo-light.svg" alt="Moca Interactive">
+    <div style="margin-top:16px;padding-top:16px;border-top:1px solid rgba(255,255,255,0.08);">
+      <img src="https://www.primadonnacollection.com/on/demandware.static/Sites-primadonna-Site/-/default/dw5e557fcf/images/Logo_Tricolore.png" alt="Primadonna Collection" style="width:150px;filter:brightness(0) invert(1);">
+    </div>
+  </div>
+  <div class="sidebar-client">
+    <div class="label">Cliente</div>
+    <div class="client-name">Primadonna Collection</div>
+    <div class="period-badge">REPORT SEO 2026</div>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-label">Contenuti</div>
+    <a href="#summary" class="nav-link active"><span class="nav-dot"></span>Executive Summary</a>
+    <a href="#gsc" class="nav-link"><span class="nav-dot"></span>Google Search Console</a>
+    <a href="#ga4" class="nav-link"><span class="nav-dot"></span>GA4 – Canale Organico</a>
+    <a href="#competitor" class="nav-link"><span class="nav-dot"></span>Benchmark Competitor</a>
+    <a href="#metodologia" class="nav-link"><span class="nav-dot"></span>Note Metodologiche</a>
+  </div>
+
+  <div class="sidebar-footer">
+    <div class="date-label">Data Report</div>
+    <div class="date-val">9 Marzo 2026</div>
+    <div style="margin-top:10px; margin-bottom:4px;" class="date-label">Fonti Dati</div>
+    <span class="source-chip">GSC</span>
+    <span class="source-chip">GA4</span>
+    <span class="source-chip">SEOZoom</span>
+  </div>
+</nav>
+
+<!-- ── MAIN CONTENT ─────────────────────────────────────────── -->
+<div class="main">
+
+  <!-- PAGE HEADER -->
+  <div class="page-header">
+    <div class="eyebrow">Report Performance Organica</div>
+    <h1>Presenza Online &amp; Posizionamento<br>nella Ricerca Organica</h1>
+    <p class="subtitle">Analisi delle performance SEO di Primadonna Collection: confronto YoY, benchmark rispetto ai competitor citati e impatto delle attività avviate da aprile 2025.</p>
+    <div class="header-meta">
+      <div class="header-meta-item">
+        <div class="label-sm">Periodo Principale Analizzato</div>
+        <div class="val-sm">8 Nov 2025 – 8 Mar 2026 (4 mesi)</div>
+      </div>
+      <div class="header-meta-item">
+        <div class="label-sm">Periodo di Confronto YoY</div>
+        <div class="val-sm">8 Nov 2024 – 8 Mar 2025</div>
+      </div>
+      <div class="header-meta-item">
+        <div class="label-sm">Attività Moca avviate</div>
+        <div class="val-sm">Aprile 2025</div>
+      </div>
+      <div class="header-meta-item">
+        <div class="label-sm">Competitor analizzati</div>
+        <div class="val-sm">Bata, Geox, Nero Giardini, Pittarello</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────────────── SECTION 1: EXECUTIVE SUMMARY ─────── -->
+  <section id="summary" class="section section-bg">
+    <div class="section-header">
+      <div class="section-eyebrow">01</div>
+      <h2>Executive Summary</h2>
+      <p class="section-desc">I principali KPI di performance organica mostrano una crescita significativa dal momento dell'avvio delle attività SEO (aprile 2025). Di seguito i dati chiave della finestra comparabile YoY più recente disponibile.</p>
+    </div>
+
+    <div class="note-box">
+      <strong>Nota sulla finestra YoY:</strong> Google Search Console conserva i dati per un massimo di 16 mesi. La data più lontana raggiungibile è l'8 novembre 2024, rendendo impossibile un confronto completo anno su anno su 12 mesi. Per questo motivo il confronto YoY è limitato alla <strong>finestra comparabile 8 nov – 8 mar</strong> (esatti 4 mesi) per entrambi gli anni. Tutti i periodi sono indicati esplicitamente in ogni sezione.
+    </div>
+
+    <div class="kpi-grid kpi-grid-4">
+      <div class="kpi-card">
+        <div class="kpi-label">Clic Organici (YoY)</div>
+        <div class="kpi-value">+29,2%</div>
+        <div class="kpi-delta">▲ +123.484 clic</div>
+        <div class="kpi-sub">8 Nov '24–8 Mar '25 vs 8 Nov '25–8 Mar '26</div>
+      </div>
+      <div class="kpi-card green">
+        <div class="kpi-label">Posizione Media (YoY)</div>
+        <div class="kpi-value">10,1</div>
+        <div class="kpi-delta">▲ Era 20,2</div>
+        <div class="kpi-sub">Migliorata di 10 posizioni — da pag. 2 a pag. 1</div>
+      </div>
+      <div class="kpi-card blue">
+        <div class="kpi-label">CTR Medio (YoY)</div>
+        <div class="kpi-value">4,05%</div>
+        <div class="kpi-delta">▲ Era 2,77%</div>
+        <div class="kpi-sub">+1,28 punti percentuali nel periodo comparabile</div>
+      </div>
+      <div class="kpi-card violet">
+        <div class="kpi-label">Revenue Organica (YoY)</div>
+        <div class="kpi-value">+22,5%</div>
+        <div class="kpi-delta">▲ +€26.764</div>
+        <div class="kpi-sub">8 Nov '25–8 Mar '26 | 2.467 transazioni organiche</div>
+      </div>
+    </div>
+
+    <div class="kpi-grid kpi-grid-4">
+      <div class="kpi-card">
+        <div class="kpi-label">Zoom Authority (SEOZoom)</div>
+        <div class="kpi-value">62</div>
+        <div class="kpi-delta">★ Migliore tra i competitor</div>
+        <div class="kpi-sub">Supera Geox (61), Pittarello (61), Bata (28)</div>
+      </div>
+      <div class="kpi-card green">
+        <div class="kpi-label">Traffico Organico Est. (SEOZoom)</div>
+        <div class="kpi-value">520K</div>
+        <div class="kpi-delta">▲ 1° tra i competitor IT</div>
+        <div class="kpi-sub">Vs Geox 349K — Pittarello 317K</div>
+      </div>
+      <div class="kpi-card blue">
+        <div class="kpi-label">Impressioni GSC (6 mesi)</div>
+        <div class="kpi-value">21,1M</div>
+        <div class="kpi-delta neutral">— Stabile vs anno prec.</div>
+        <div class="kpi-sub">Set '25–Mar '26 | Alta visibilità nelle SERP</div>
+      </div>
+      <div class="kpi-card orange">
+        <div class="kpi-label">Sessioni Organiche (YoY)</div>
+        <div class="kpi-value">+24,1%</div>
+        <div class="kpi-delta">▲ +80.062 sessioni</div>
+        <div class="kpi-sub">8 Nov '25–8 Mar '26 | Fonte GA4</div>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ─────────────────── SECTION 2: GSC ───────────────────── -->
+  <section id="gsc" class="section section-gray">
+    <div class="section-header">
+      <div class="section-eyebrow">02</div>
+      <h2>Google Search Console</h2>
+      <p class="section-desc">Dati di visibilità e interazione nelle SERP di Google. Il confronto YoY è limitato alla finestra 9 nov – 8 mar per entrambi gli anni, periodo comparabile disponibile con i 16 mesi di data retention GSC.</p>
+    </div>
+
+    <div style="display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap;">
+      <span class="source-tag">Fonte: Google Search Console</span>
+      <span class="source-tag">Proprietà: sc-domain:primadonnacollection.com</span>
+    </div>
+
+    <!-- YoY COMPARE -->
+    <div class="compare-grid">
+      <div class="compare-card prev">
+        <span class="period-label">Anno Precedente</span>
+        <div style="font-size:11px;color:#888;margin-bottom:12px;">8 Novembre 2024 – 8 Marzo 2025</div>
+        <div class="metric-row"><span class="metric-name">Clic Totali</span><span class="metric-val">422.348</span></div>
+        <div class="metric-row"><span class="metric-name">Impressioni</span><span class="metric-val">15.269.519</span></div>
+        <div class="metric-row"><span class="metric-name">CTR Medio</span><span class="metric-val">2,77%</span></div>
+        <div class="metric-row"><span class="metric-name">Posizione Media</span><span class="metric-val" style="color:#E52217;">20,2 (pag.2+)</span></div>
+      </div>
+      <div class="compare-card curr">
+        <span class="period-label">Anno Corrente</span>
+        <div style="font-size:11px;color:#888;margin-bottom:12px;">8 Novembre 2025 – 8 Marzo 2026</div>
+        <div class="metric-row"><span class="metric-name">Clic Totali</span><span class="metric-val">545.832 <span class="delta-pill pos" style="margin-left:6px;">▲+29,2%</span></span></div>
+        <div class="metric-row"><span class="metric-name">Impressioni</span><span class="metric-val">13.470.169 <span class="delta-pill neg" style="margin-left:6px;">▼-11,8%</span></span></div>
+        <div class="metric-row"><span class="metric-name">CTR Medio</span><span class="metric-val">4,05% <span class="delta-pill pos" style="margin-left:6px;">▲+1,28pp</span></span></div>
+        <div class="metric-row"><span class="metric-name">Posizione Media</span><span class="metric-val" style="color:#118541;">10,1 (pag.1) <span class="delta-pill pos" style="margin-left:6px;">▲-10 pos.</span></span></div>
+      </div>
+    </div>
+
+    <div class="info-box">
+      <strong>Come leggere il dato sulle Impressioni:</strong> La riduzione delle impressioni (-11,8%) nella finestra YoY è coerente con il miglioramento del posizionamento. Posizionandosi in prima pagina su meno query a coda lunga (che generavano molte impressioni senza clic), il sito ora appare su query più rilevanti con CTR molto più alto. Il risultato netto è una <strong>crescita del +29,2% dei clic</strong> con meno impressioni totali: segnale di una visibilità più qualificata.
+    </div>
+
+    <!-- GSC ULTIMI 6 MESI KPI -->
+    <div class="kpi-grid kpi-grid-4" style="margin-bottom:28px;">
+      <div class="kpi-card">
+        <div class="kpi-label">Clic Totali (periodo corrente)</div>
+        <div class="kpi-value">545.832</div>
+        <div class="kpi-sub">8 Nov 2025 – 8 Mar 2026</div>
+      </div>
+      <div class="kpi-card green">
+        <div class="kpi-label">Impressioni (periodo corrente)</div>
+        <div class="kpi-value">13,5M</div>
+        <div class="kpi-sub">8 Nov 2025 – 8 Mar 2026</div>
+      </div>
+      <div class="kpi-card blue">
+        <div class="kpi-label">CTR Medio (periodo corrente)</div>
+        <div class="kpi-value">4,05%</div>
+        <div class="kpi-sub">Sopra la media di settore (~2–3%)</div>
+      </div>
+      <div class="kpi-card violet">
+        <div class="kpi-label">Posizione Media (periodo corrente)</div>
+        <div class="kpi-value">10,1</div>
+        <div class="kpi-sub">In prima pagina Google per le keyword principali</div>
+      </div>
+    </div>
+
+    <!-- TOP QUERIES NO-BRAND -->
+    <div class="chart-wrap">
+      <div class="chart-title">TOP 10 QUERY NO-BRAND — PERIODO: 8 NOV 2025 – 8 MAR 2026</div>
+      <div class="chart-subtitle">Fonte: Google Search Console · Escluse query contenenti "primadonna", "prima donna" e varianti brand · Ordinate per clic</div>
+      <div style="display:inline-flex;align-items:center;gap:6px;background:#E8F5EE;border:1px solid #B8DFC7;border-radius:5px;padding:6px 12px;margin-bottom:10px;">
+        <span style="font-size:10px;font-weight:700;color:#118541;letter-spacing:.05em;">NO-BRAND KEYWORDS</span>
+        <span style="font-size:11px;color:#118541;">Query generiche senza riferimento al brand — indicano visibilità su nuovi utenti non ancora fidelizzati</span>
+      </div>
+      <div style="display:flex;gap:12px;margin-bottom:14px;flex-wrap:wrap;">
+        <div style="display:inline-flex;align-items:center;gap:6px;background:#E8F5EE;border:1px solid #B8DFC7;border-radius:4px;padding:4px 10px;font-size:10px;font-weight:700;color:#118541;">Pos. 1–3 · Top 3</div>
+        <span style="font-size:11px;color:#888;align-self:center;">= posizionamento nella fascia alta — massima visibilità nella SERP</span>
+        <div style="display:inline-flex;align-items:center;gap:6px;background:#EEF2FF;border:1px solid #C7D4FF;border-radius:4px;padding:4px 10px;font-size:10px;font-weight:700;color:#5781FF;">Pos. 4+ · Prima pagina</div>
+        <span style="font-size:11px;color:#888;align-self:center;">= presente in prima pagina ma con margine di miglioramento</span>
+      </div>
+      <div class="query-list" id="queryList">
+        <!-- populated by JS -->
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ─────────────────── SECTION 3: GA4 ───────────────────── -->
+  <section id="ga4" class="section section-bg">
+    <div class="section-header">
+      <div class="section-eyebrow">03</div>
+      <h2>GA4 – Canale Organico &amp; Acquisti</h2>
+      <p class="section-desc">Dati di sessioni, utenti e performance e-commerce specifici del canale Organic Search. Il confronto YoY utilizza la stessa finestra temporale del GSC: <strong>8 Novembre 2024 – 8 Marzo 2025</strong> vs <strong>8 Novembre 2025 – 8 Marzo 2026</strong>.</p>
+    </div>
+
+    <div style="display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap;">
+      <span class="source-tag">Fonte: Google Analytics 4</span>
+      <span class="source-tag">Proprietà: Primadonna Collection – GA4 (343329086)</span>
+    </div>
+
+    <!-- ORGANIC YoY COMPARE -->
+    <div class="compare-grid">
+      <div class="compare-card prev">
+        <span class="period-label">Organic Search · Periodo Precedente</span>
+        <div style="font-size:11px;color:#888;margin-bottom:12px;">8 Novembre 2024 – 8 Marzo 2025</div>
+        <div class="metric-row"><span class="metric-name">Sessioni Organiche</span><span class="metric-val">331.891</span></div>
+        <div class="metric-row"><span class="metric-name">Utenti Totali</span><span class="metric-val">217.794</span></div>
+        <div class="metric-row"><span class="metric-name">Transazioni</span><span class="metric-val">1.926</span></div>
+        <div class="metric-row"><span class="metric-name">Revenue Organica</span><span class="metric-val">€118.858</span></div>
+      </div>
+      <div class="compare-card curr">
+        <span class="period-label">Organic Search · Periodo Corrente</span>
+        <div style="font-size:11px;color:#888;margin-bottom:12px;">8 Novembre 2025 – 8 Marzo 2026</div>
+        <div class="metric-row"><span class="metric-name">Sessioni Organiche</span><span class="metric-val">411.953 <span class="delta-pill pos">▲+24,1%</span></span></div>
+        <div class="metric-row"><span class="metric-name">Utenti Totali</span><span class="metric-val">270.572 <span class="delta-pill pos">▲+24,2%</span></span></div>
+        <div class="metric-row"><span class="metric-name">Transazioni</span><span class="metric-val">2.467 <span class="delta-pill pos">▲+28,1%</span></span></div>
+        <div class="metric-row"><span class="metric-name">Revenue Organica</span><span class="metric-val">€145.622 <span class="delta-pill pos">▲+22,5%</span></span></div>
+      </div>
+    </div>
+
+    <div class="info-box">
+      <strong>Periodi allineati con GSC:</strong> Entrambe le finestre coprono esattamente 4 mesi (8 nov – 8 mar), garantendo un confronto YoY omogeneo. Su questa base comparabile, le sessioni organiche crescono del <strong>+24,1%</strong>, le transazioni del <strong>+28,1%</strong> e la revenue organica del <strong>+22,5%</strong>.
+    </div>
+
+    <!-- ORGANIC SESSIONS MONTHLY CHART -->
+    <div class="chart-wrap">
+      <div class="chart-title">SESSIONI ORGANICHE MENSILI</div>
+      <div class="chart-subtitle">GA4 · Nov 2024 – Mar 2026 · Canale: Organic Search · Colore rosso = post avvio attività (apr 2025)</div>
+      <div class="chart-canvas-wrap" style="height:280px;">
+        <canvas id="organicSessionsChart"></canvas>
+      </div>
+      <div class="info-box" style="margin-top:16px;margin-bottom:0;">
+        <strong>Nota sul calo di febbraio 2026:</strong> La riduzione delle sessioni organiche a febbraio è un andamento fisiologico per il settore calzaturiero e moda: febbraio è storicamente il mese con la domanda organica più compressa del Q1, posizionato tra la fine dei saldi invernali e l'avvio della nuova stagione primavera/estate (non ancora percepita dagli utenti nelle ricerche). Il dato è in linea con lo stesso mese dell'anno precedente e non rappresenta un segnale negativo strutturale. La curva è attesa in risalita da marzo–aprile con il cambio stagionale.
+      </div>
+    </div>
+
+    <!-- ORGANIC TRANSACTIONS CHART -->
+    <div class="grid-2">
+      <div class="chart-wrap" style="margin-bottom:0;">
+        <div class="chart-title">TRANSAZIONI ORGANICHE MENSILI</div>
+        <div class="chart-subtitle">GA4 · Nov 2024 – Feb 2026</div>
+        <div style="height:220px;">
+          <canvas id="organicTransChart"></canvas>
+        </div>
+      </div>
+      <div class="chart-wrap" style="margin-bottom:0;">
+        <div class="chart-title">REVENUE ORGANICA MENSILE (€)</div>
+        <div class="chart-subtitle">GA4 · Nov 2024 – Feb 2026</div>
+        <div style="height:220px;">
+          <canvas id="organicRevenueChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top:16px;"></div>
+
+    <!-- MIX CANALI -->
+    <div class="chart-wrap">
+      <div class="chart-title">MIX DI CANALI — SESSIONI E TRANSAZIONI</div>
+      <div class="chart-subtitle">GA4 · 8 Novembre 2025 – 8 Marzo 2026 · Tutti i canali a confronto</div>
+      <div class="table-wrap" style="margin:0;border:none;">
+        <table>
+          <thead>
+            <tr>
+              <th>Canale</th>
+              <th>Sessioni</th>
+              <th>Transazioni</th>
+              <th>Revenue</th>
+              <th>% Revenue</th>
+            </tr>
+          </thead>
+          <tbody id="channelTable"></tbody>
+        </table>
+      </div>
+      <div class="note-box" style="margin-top:16px;margin-bottom:0;">
+        <strong>Nota sul canale Direct:</strong> Il volume elevato di sessioni Direct (409K) è un dato da interpretare con cautela. In GA4, il canale "Direct" raccoglie non solo gli accessi diretti (utenti che digitano l'URL) ma anche tutto il traffico la cui sorgente non è tracciabile: link da app di messaggistica (WhatsApp, Telegram), click da PDF o documenti, newsletter senza parametri UTM, redirect senza referrer e una quota di traffico organico e paid che perde l'attribuzione per problemi tecnici (ITP, cookie bloccati, redirect). È probabile quindi che una parte significativa del Direct derivi da canali organici e paid non correttamente tracciati. Questo non impatta i dati GSC, che sono indipendenti dal tracciamento GA4.
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ─────────────────── SECTION 4: COMPETITOR ─────────────── -->
+  <section id="competitor" class="section section-gray">
+    <div class="section-header">
+      <div class="section-eyebrow">04</div>
+      <h2>Benchmark Competitor – SEOZoom</h2>
+      <p class="section-desc">Analisi comparativa con i competitor citati (bata.com, Geox, Nero Giardini, Pittarello) rispetto alla Zoom Authority, traffico organico stimato, volume di keyword indicizzate e distribuzione nelle SERP. Dati rilevati a Marzo 2026.</p>
+    </div>
+
+    <div style="display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap;">
+      <span class="source-tag">Fonte: SEOZoom</span>
+      <span class="source-tag">Database: Italiano (IT)</span>
+      <span class="source-tag">Data: Marzo 2026</span>
+    </div>
+
+
+    <!-- COMPETITOR TABLE -->
+    <div class="table-wrap">
+      <div class="table-header">
+        <div class="table-title">CONFRONTO KPI ORGANICI — TUTTI I COMPETITOR</div>
+        <div class="table-subtitle">SEOZoom · Marzo 2026 · Database IT</div>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Dominio</th>
+            <th>Zoom Authority</th>
+            <th>Trust</th>
+            <th>Keyword Totali</th>
+            <th>Kw Pag. 1</th>
+            <th>Pos. 1–3</th>
+            <th>Traffico Organico Stimato</th>
+          </tr>
+        </thead>
+        <tbody id="competitorTable"></tbody>
+      </table>
+    </div>
+
+    <!-- AUTHORITY CHART -->
+    <div class="grid-2">
+      <div class="chart-wrap" style="margin-bottom:0;">
+        <div class="chart-title">ZOOM AUTHORITY COMPARATA</div>
+        <div class="chart-subtitle">SEOZoom · Score su 100 · Marzo 2026</div>
+        <div class="note-box" style="margin-bottom:12px;font-size:11px;">
+          <strong>Cos'è la Zoom Authority (ZA)?</strong> È il punteggio proprietario di SEOZoom (da 0 a 100) che misura la forza complessiva di un dominio nella ricerca organica italiana. Combina tre dimensioni: <strong>Trust</strong> (autorevolezza e qualità dei backlink), <strong>Stability</strong> (solidità e costanza del posizionamento nel tempo) e <strong>Opportunity</strong> (potenziale di crescita su nuove keyword). Un ZA più alto indica un sito più difficile da superare nelle SERP.
+        </div>
+        <div style="height:260px;"><canvas id="zaChart"></canvas></div>
+      </div>
+      <div class="chart-wrap" style="margin-bottom:0;">
+        <div class="chart-title">TRAFFICO ORGANICO STIMATO</div>
+        <div class="chart-subtitle">SEOZoom · Visite mensili organiche stimate · Marzo 2026</div>
+        <div style="height:260px;"><canvas id="trafficChart"></canvas></div>
+      </div>
+    </div>
+
+    <div style="margin-top:16px;"></div>
+
+    <!-- KW PAGE 1 CHART -->
+    <div class="chart-wrap">
+      <div class="chart-title">KEYWORD IN PRIMA PAGINA GOOGLE — DISTRIBUZIONE</div>
+      <div class="chart-subtitle">SEOZoom · Keyword indicizzate nelle posizioni 1–10 · Marzo 2026</div>
+      <div style="height:260px;"><canvas id="kwPage1Chart"></canvas></div>
+    </div>
+
+  </section>
+
+<!-- ─────────────────── SECTION 6: NOTE ───────────────────── -->
+  <section id="metodologia" class="section section-gray">
+    <div class="section-header">
+      <div class="section-eyebrow">05</div>
+      <h2>Note Metodologiche</h2>
+      <p class="section-desc">Chiarimenti sulle fonti dati, i periodi di riferimento e le limitazioni metodologiche di questo report.</p>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+
+      <div>
+        <div class="chart-wrap">
+          <div class="chart-title" style="color:var(--red);margin-bottom:10px;">GOOGLE SEARCH CONSOLE</div>
+          <ul style="font-size:12px;line-height:1.8;color:var(--gray-text);padding-left:16px;">
+            <li><strong>Data retention:</strong> massimo 16 mesi. Data più remota disponibile: 8 Novembre 2024.</li>
+            <li><strong>Confronto YoY:</strong> limitato alla finestra esatta 8 nov – 8 mar (4 mesi esatti) per entrambi gli anni.</li>
+            <li><strong>Impressioni YoY in calo:</strong> normale con miglioramento del ranking — le keyword di pag. 1 ricevono meno impressioni "passive" ma più clic.</li>
+            <li><strong>Query anonimizzate:</strong> la somma delle singole query non corrisponde sempre al totale aggregato per motivi di privacy Google.</li>
+            <li><strong>Proprietà:</strong> sc-domain:primadonnacollection.com (include tutti i sottodomini e protocolli).</li>
+          </ul>
+        </div>
+
+        <div class="chart-wrap">
+          <div class="chart-title" style="color:var(--blue);margin-bottom:10px;">GOOGLE ANALYTICS 4</div>
+          <ul style="font-size:12px;line-height:1.8;color:var(--gray-text);padding-left:16px;">
+            <li><strong>Proprietà:</strong> Primadonna Collection – GA4 (ID: 343329086).</li>
+            <li><strong>Canale Organic Search:</strong> include traffico da motori di ricerca non a pagamento.</li>
+            <li><strong>totalUsers:</strong> non sommabile tra periodi diversi (stesso utente potrebbe essere contato più volte).</li>
+            <li><strong>Transazioni e Revenue:</strong> attribuite al canale di last click del default channel grouping GA4.</li>
+            <li><strong>Marzo 2026:</strong> dati parziali (1–8 marzo), non utilizzati per i confronti mensili completi.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div>
+        <div class="chart-wrap">
+          <div class="chart-title" style="color:var(--green);margin-bottom:10px;">SEOZOOM</div>
+          <ul style="font-size:12px;line-height:1.8;color:var(--gray-text);padding-left:16px;">
+            <li><strong>Database:</strong> IT (italiano). I dati sono stimati sulla base del crawl SEOZoom delle SERP italiane.</li>
+            <li><strong>Traffico stimato:</strong> basato su CTR medi per posizione e volume di ricerca mensile — non coincide con GA4.</li>
+            <li><strong>Zoom Authority (ZA):</strong> score proprietario SEOZoom 0–100 che combina Trust, Stability e Opportunity.</li>
+            <li><strong>Bata:</strong> analizzato su <em>bata.com</em> (dominio internazionale, più rappresentativo della presenza organica IT). Il dominio <em>bata.it</em> ha traffico organico trascurabile nel database SEOZoom.</li>
+            <li><strong>Nero Giardini:</strong> analizzato su <em>nerogiardini.it</em> senza prefisso www — è il dominio principale che concentra tutta la presenza organica del brand nel database SEOZoom IT. La versione <em>www.nerogiardini.it</em> è trattata come sottodominio separato con dati distinti.</li>
+            <li><strong>Data:</strong> marzo 2026 (rilevazione corrente).</li>
+          </ul>
+        </div>
+
+      </div>
+
+    </div>
+
+    <div class="info-box" style="margin-top:4px;">
+      <strong>Riepilogo Periodi Chiave del Report</strong><br><br>
+      <strong>Finestra YoY GSC &amp; GA4 (comparabile):</strong> 8 nov 2024 – 8 mar 2025 vs 8 nov 2025 – 8 mar 2026 (stessa durata esatta: 4 mesi)<br>
+      <strong>Sessioni organiche mensili (grafico GA4):</strong> Novembre 2024 – Marzo 2026 (storico completo disponibile)<br>
+      <strong>Pre-Moca (GSC):</strong> 9 novembre 2024 – 30 aprile 2025<br>
+      <strong>Post-Moca (GSC):</strong> 1 maggio 2025 – 8 marzo 2026<br>
+      <strong>SEOZoom snapshot:</strong> marzo 2026
+    </div>
+
+  </section>
+
+  <!-- FOOTER -->
+  <div class="page-footer">
+    <div>Report elaborato da <strong>Moca Interactive</strong> per <strong>Primadonna Collection</strong> · 9 Marzo 2026</div>
+    <div>Fonti: Google Search Console · Google Analytics 4 · SEOZoom</div>
+  </div>
+
+</div><!-- end main -->
+
+<script>
+// ────────────────────────────────────────────────────────────
+// DATA
+// ────────────────────────────────────────────────────────────
+
+const BRAND = {
+  red: '#E52217',
+  redLight: '#FF5147',
+  redPale: '#FFE7E6',
+  green: '#118541',
+  blue: '#5781FF',
+  violet: '#551FC4',
+  orange: '#DB5E29',
+  gray: '#484848',
+  grayText: '#595959',
+  dark: '#191919',
+};
+
+const MONTHS_LABEL = ['Nov \'24','Dic \'24','Gen \'25','Feb \'25','Mar \'25','Apr \'25','Mag \'25','Giu \'25','Lug \'25','Ago \'25','Set \'25','Ott \'25','Nov \'25','Dic \'25','Gen \'26','Feb \'26'];
+
+const organicSessionsByMonth = [87868, 91421, 84866, 62006, 69941, 78972, 103404, 112633, 170427, 131453, 147653, 150921, 145217, 111594, 94101, 65089];
+const organicTransByMonth = [315, 405, 602, 520, 370, 273, 451, 508, 1358, 1245, 851, 584, 673, 428, 715, 622];
+const organicRevByMonth = [23434, 29727, 36626, 27767, 17590, 17298, 27672, 33077, 66289, 54337, 36525, 37812, 45835, 30306, 40212, 30216];
+
+const topQueries = [
+  { kw:'stivali donna', clicks:5827, impressions:194866, ctr:2.99, pos:2.3 },
+  { kw:'mocassini donna', clicks:2572, impressions:87717, ctr:2.93, pos:2.2 },
+  { kw:'stivali', clicks:2227, impressions:85445, ctr:2.61, pos:2.2 },
+  { kw:'anfibi donna', clicks:2058, impressions:71629, ctr:2.87, pos:3.1 },
+  { kw:'scarpe donna', clicks:1525, impressions:114040, ctr:1.34, pos:4.4 },
+  { kw:'stivali alti donna', clicks:919, impressions:30123, ctr:3.05, pos:2.4 },
+  { kw:'texani', clicks:918, impressions:48965, ctr:1.87, pos:2.9 },
+  { kw:'décolleté nere', clicks:912, impressions:33614, ctr:2.71, pos:3.0 },
+  { kw:'décolleté', clicks:808, impressions:44891, ctr:1.80, pos:2.7 },
+  { kw:'decolté', clicks:742, impressions:47143, ctr:1.57, pos:2.0 },
+];
+
+const competitors = [
+  { domain:'primadonnacollection.com', za:62, trust:59, total_kw:27076, page1:7933, pos13:3111, traffic_est:520196, traffic_curr:399001, isPrimadonna:true },
+  { domain:'geox.com', za:61, trust:61, total_kw:44263, page1:13223, pos13:4952, traffic_est:349754, traffic_curr:258603, isPrimadonna:false },
+  { domain:'pittarello.com', za:61, trust:60, total_kw:46460, page1:11557, pos13:2605, traffic_est:317631, traffic_curr:227800, isPrimadonna:false },
+  { domain:'nerogiardini.it', za:59, trust:57, total_kw:19354, page1:6374, pos13:2587, traffic_est:286028, traffic_curr:239136, isPrimadonna:false },
+  { domain:'bata.com', za:48, trust:49, total_kw:23730, page1:2043, pos13:180, traffic_est:22156, traffic_curr:16810, isPrimadonna:false },
+];
+
+const channels = [
+  { name:'Organic Search', sessions:411953, trans:2467, rev:145622 },
+  { name:'Direct', sessions:409261, trans:3858, rev:216124 },
+  { name:'Cross-network', sessions:312656, trans:3153, rev:174375 },
+  { name:'Paid Search', sessions:271626, trans:3123, rev:178675 },
+  { name:'Paid Social', sessions:153147, trans:696, rev:37907 },
+  { name:'Email', sessions:134690, trans:794, rev:47215 },
+  { name:'Affiliates', sessions:90917, trans:1960, rev:124733 },
+  { name:'Organic Social', sessions:50148, trans:158, rev:9734 },
+  { name:'Display', sessions:44633, trans:350, rev:21000 },
+];
+
+// ────────────────────────────────────────────────────────────
+// HELPERS
+// ────────────────────────────────────────────────────────────
+function fmt(n) { return n >= 1000000 ? (n/1000000).toFixed(1)+'M' : n >= 1000 ? (n/1000).toFixed(0)+'K' : n; }
+function fmtFull(n) { return n.toLocaleString('it-IT'); }
+function fmtEur(n) { return '€'+n.toLocaleString('it-IT'); }
+
+// ────────────────────────────────────────────────────────────
+// TOP QUERIES LIST
+// ────────────────────────────────────────────────────────────
+const qList = document.getElementById('queryList');
+topQueries.forEach((q,i) => {
+  const maxClicks = topQueries[0].clicks;
+  const pct = (q.clicks/maxClicks*100).toFixed(1);
+  const isTop3 = q.pos <= 3;
+  qList.innerHTML += `
+  <div class="query-row">
+    <div class="query-rank">${i+1}</div>
+    <div style="flex:1;">
+      <div class="query-text">${q.kw}</div>
+      <div class="prog-bar"><div class="prog-fill" style="width:${pct}%;background:var(--blue);"></div></div>
+    </div>
+    <div class="query-metrics">
+      <div class="query-metric"><div class="qm-val">${fmtFull(q.clicks)}</div><div class="qm-label">Clic</div></div>
+      <div class="query-metric"><div class="qm-val">${fmtFull(q.impressions)}</div><div class="qm-label">Impr.</div></div>
+      <div class="query-metric"><div class="qm-val">${q.ctr}%</div><div class="qm-label">CTR</div></div>
+    </div>
+    <div class="pos-pill ${isTop3?'pos1':''}">Pos. ${q.pos}</div>
+  </div>`;
+});
+
+// ────────────────────────────────────────────────────────────
+// CHANNEL TABLE
+// ────────────────────────────────────────────────────────────
+const totalRev = channels.reduce((a,c)=>a+c.rev,0);
+const ct = document.getElementById('channelTable');
+channels.forEach((c,i) => {
+  const pct = (c.rev/totalRev*100).toFixed(1);
+  const isOrganic = c.name === 'Organic Search';
+  ct.innerHTML += `<tr ${isOrganic?'class="highlight-row"':''}>
+    <td><span style="font-weight:${isOrganic?'800':'600'};color:${isOrganic?'var(--red)':'var(--gray-dark)'};">${c.name}</span></td>
+    <td>${fmtFull(c.sessions)}</td>
+    <td>${fmtFull(c.trans)}</td>
+    <td>${fmtEur(c.rev)}</td>
+    <td>
+      <div style="display:flex;align-items:center;gap:8px;justify-content:flex-end;">
+        <div style="width:60px;height:4px;background:#F0F1F2;border-radius:2px;overflow:hidden;">
+          <div style="width:${pct}%;height:100%;background:${isOrganic?'var(--red)':'#AAA'};border-radius:2px;"></div>
+        </div>
+        <span style="font-size:11px;font-weight:600;">${pct}%</span>
+      </div>
+    </td>
+  </tr>`;
+});
+
+// ────────────────────────────────────────────────────────────
+// COMPETITOR TABLE
+// ────────────────────────────────────────────────────────────
+const ct2 = document.getElementById('competitorTable');
+const zaColors = ['#E52217','#5781FF','#551FC4','#484848','#484848'];
+competitors.forEach((c,i) => {
+  const color = zaColors[i];
+  ct2.innerHTML += `<tr ${c.isPrimadonna?'class="highlight-row"':''}>
+    <td>
+      <div class="comp-name">
+        <div class="comp-favicon" style="background:${c.isPrimadonna?'var(--red-pale)':'var(--gray-light)'};color:${c.isPrimadonna?'var(--red)':'#888'};">${c.domain[0].toUpperCase()}</div>
+        <strong>${c.domain}</strong>
+        ${c.isPrimadonna?'<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--red);margin-left:6px;vertical-align:middle;"></span>':''}
+      </div>
+    </td>
+    <td>
+      <div class="za-badge" style="background:${color};">${c.za}</div>
+    </td>
+    <td>${c.trust}</td>
+    <td>${fmtFull(c.total_kw)}</td>
+    <td>${fmtFull(c.page1)}</td>
+    <td>${fmtFull(c.pos13)}</td>
+    <td>${fmtFull(c.traffic_curr)}</td>
+  </tr>`;
+});
+
+// ────────────────────────────────────────────────────────────
+// CHARTS CONFIG
+// ────────────────────────────────────────────────────────────
+Chart.defaults.font.family = "'Figtree', sans-serif";
+Chart.defaults.color = '#888';
+Chart.defaults.plugins.legend.display = false;
+
+const aprilIndex = 5; // April 2025 is index 5 in MONTHS_LABEL
+
+// helper: annotation line at April
+function aprilAnnotation() {
+  return {
+    annotation: {
+      annotations: {
+        mokaStart: {
+          type: 'line',
+          xMin: aprilIndex - 0.5,
+          xMax: aprilIndex - 0.5,
+          borderColor: BRAND.red,
+          borderWidth: 1.5,
+          borderDash: [4,3],
+          label: {
+            content: '▼ Avvio Moca',
+            display: true,
+            position: 'start',
+            backgroundColor: BRAND.red,
+            color: '#fff',
+            font: { size: 9, weight: '700' },
+            padding: { x:6, y:3 },
+          }
+        }
+      }
+    }
+  };
+}
+
+// Organic Sessions chart
+const organicSessionsCtx = document.getElementById('organicSessionsChart').getContext('2d');
+
+// Custom plugin: vertical line + label at April 2025
+const mokaLinePlugin = {
+  id: 'mokaLine',
+  afterDraw(chart) {
+    const { ctx, chartArea: { top, bottom }, scales: { x } } = chart;
+    // position between Apr (index 5) and May (index 6) — i.e. right after Apr bar
+    const xPos = x.getPixelForValue(aprilIndex);
+    const barWidth = x.getPixelForValue(1) - x.getPixelForValue(0);
+    const lineX = xPos + barWidth * 0.52;
+
+    ctx.save();
+
+    // Dashed vertical line
+    ctx.beginPath();
+    ctx.setLineDash([5, 4]);
+    ctx.strokeStyle = BRAND.red;
+    ctx.lineWidth = 1.5;
+    ctx.moveTo(lineX, top - 28);
+    ctx.lineTo(lineX, bottom);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Badge background
+    const label1 = '▼ Aprile 2025';
+    const label2 = 'Inizio attività Moca';
+    ctx.font = '700 9px Figtree, sans-serif';
+    const w1 = ctx.measureText(label1).width;
+    ctx.font = '500 9px Figtree, sans-serif';
+    const w2 = ctx.measureText(label2).width;
+    const badgeW = Math.max(w1, w2) + 16;
+    const badgeH = 30;
+    const badgeX = lineX - badgeW / 2;
+    const badgeY = top - 36;
+
+    ctx.fillStyle = BRAND.red;
+    ctx.beginPath();
+    ctx.roundRect(badgeX, badgeY, badgeW, badgeH, 4);
+    ctx.fill();
+
+    // Badge text line 1
+    ctx.fillStyle = '#fff';
+    ctx.font = '700 9px Figtree, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(label1, lineX, badgeY + 11);
+
+    // Badge text line 2
+    ctx.font = '500 8.5px Figtree, sans-serif';
+    ctx.fillStyle = 'rgba(255,255,255,0.85)';
+    ctx.fillText(label2, lineX, badgeY + 23);
+
+    ctx.restore();
+  }
+};
+
+new Chart(organicSessionsCtx, {
+  type:'bar',
+  plugins: [mokaLinePlugin],
+  data: {
+    labels: MONTHS_LABEL,
+    datasets: [
+      {
+        label:'Sessioni Organiche',
+        data: organicSessionsByMonth,
+        backgroundColor: organicSessionsByMonth.map((v,i) => i >= aprilIndex ? BRAND.red : '#DDDEE0'),
+        borderRadius: 3,
+        borderSkipped: false,
+      }
+    ]
+  },
+  options: {
+    responsive:true, maintainAspectRatio:false,
+    layout: { padding: { top: 44 } },
+    scales: {
+      x:{ grid:{display:false}, ticks:{font:{size:10}} },
+      y:{ grid:{color:'#F4F5F6'}, ticks:{font:{size:10}, callback:(v)=>fmt(v)} }
+    },
+    plugins:{
+      legend:{display:false},
+      tooltip:{callbacks:{
+        label:(c)=>'Sessioni: '+fmtFull(c.raw),
+        title:(items)=>{ const i=items[0].dataIndex; return MONTHS_LABEL[i]+(i===aprilIndex?' ← Inizio attività Moca':''); }
+      }}
+    }
+  }
+});
+
+// Organic Transactions
+new Chart(document.getElementById('organicTransChart'), {
+  type:'line',
+  data:{
+    labels: MONTHS_LABEL,
+    datasets:[{
+      label:'Transazioni',
+      data: organicTransByMonth,
+      borderColor: BRAND.green,
+      backgroundColor:'rgba(17,133,65,0.08)',
+      borderWidth:2,
+      fill:true,
+      tension:0.4,
+      pointRadius: organicTransByMonth.map((v,i)=>i===aprilIndex?6:3),
+      pointBackgroundColor: organicTransByMonth.map((v,i)=>i>=aprilIndex?BRAND.green:'#ccc'),
+    }]
+  },
+  options:{
+    responsive:true, maintainAspectRatio:false,
+    scales:{
+      x:{grid:{display:false}, ticks:{font:{size:9}}},
+      y:{grid:{color:'#F4F5F6'}, ticks:{font:{size:9}}}
+    },
+    plugins:{legend:{display:false}}
+  }
+});
+
+// Organic Revenue
+new Chart(document.getElementById('organicRevenueChart'), {
+  type:'line',
+  data:{
+    labels: MONTHS_LABEL,
+    datasets:[{
+      label:'Revenue €',
+      data: organicRevByMonth,
+      borderColor: BRAND.blue,
+      backgroundColor:'rgba(87,129,255,0.08)',
+      borderWidth:2,
+      fill:true,
+      tension:0.4,
+      pointRadius: organicRevByMonth.map((v,i)=>i===aprilIndex?6:3),
+      pointBackgroundColor: organicRevByMonth.map((v,i)=>i>=aprilIndex?BRAND.blue:'#ccc'),
+    }]
+  },
+  options:{
+    responsive:true, maintainAspectRatio:false,
+    scales:{
+      x:{grid:{display:false}, ticks:{font:{size:9}}},
+      y:{grid:{color:'#F4F5F6'}, ticks:{font:{size:9}, callback:(v)=>'€'+fmt(v)}}
+    },
+    plugins:{legend:{display:false}}
+  }
+});
+
+// ZA Competitor Chart
+new Chart(document.getElementById('zaChart'), {
+  type:'bar',
+  data:{
+    labels: competitors.map(c=>c.domain.replace('.com','').replace('.it','')),
+    datasets:[{
+      data: competitors.map(c=>c.za),
+      backgroundColor: [BRAND.red, BRAND.blue, BRAND.violet, BRAND.gray, BRAND.gray],
+      borderRadius:4,
+    }]
+  },
+  options:{
+    indexAxis:'y',
+    responsive:true, maintainAspectRatio:false,
+    scales:{
+      x:{grid:{color:'#F4F5F6'}, max:100, ticks:{font:{size:10}}},
+      y:{grid:{display:false}, ticks:{font:{size:10, weight:'600'}}}
+    },
+    plugins:{legend:{display:false}}
+  }
+});
+
+// Traffic Competitor Chart — all 5 competitors
+const compColors = [BRAND.red, BRAND.blue, BRAND.violet, BRAND.green, BRAND.orange];
+new Chart(document.getElementById('trafficChart'), {
+  type:'bar',
+  data:{
+    labels: competitors.map(c=>c.domain.replace('.com','').replace('.it','')),
+    datasets:[{
+      data: competitors.map(c=>c.traffic_curr),
+      backgroundColor: compColors,
+      borderRadius:4,
+    }]
+  },
+  options:{
+    indexAxis:'y',
+    responsive:true, maintainAspectRatio:false,
+    scales:{
+      x:{grid:{color:'#F4F5F6'}, ticks:{font:{size:10}, callback:(v)=>fmt(v)}},
+      y:{grid:{display:false}, ticks:{font:{size:10, weight:'600'}}}
+    },
+    plugins:{legend:{display:false}, tooltip:{callbacks:{label:(c)=>fmtFull(c.raw)+' visite/mese stimate'}}}
+  }
+});
+
+// KW Page 1 — all 5 competitors
+new Chart(document.getElementById('kwPage1Chart'), {
+  type:'bar',
+  data:{
+    labels: competitors.map(c=>c.domain.replace('.com','').replace('.it','')),
+    datasets:[
+      {
+        label:'Pos. 1–3',
+        data: competitors.map(c=>c.pos13),
+        backgroundColor: compColors,
+        borderRadius:4,
+        stack:'s'
+      },
+      {
+        label:'Pos. 4–10',
+        data: competitors.map(c=>c.page1 - c.pos13),
+        backgroundColor: compColors.map(col => col+'40'),
+        borderRadius:4,
+        stack:'s'
+      },
+    ]
+  },
+  options:{
+    indexAxis:'y',
+    responsive:true, maintainAspectRatio:false,
+    scales:{
+      x:{grid:{color:'#F4F5F6'}, ticks:{font:{size:10}, callback:(v)=>fmt(v)}},
+      y:{grid:{display:false}, ticks:{font:{size:10, weight:'600'}}}
+    },
+    plugins:{legend:{display:true, position:'top', labels:{font:{size:10, family:'Figtree'}, boxWidth:10, boxHeight:10}}}
+  }
+});
+
+// ── ACTIVE NAV ──
+const sections = document.querySelectorAll('section[id]');
+const navLinks = document.querySelectorAll('.nav-link');
+window.addEventListener('scroll', () => {
+  let current = '';
+  sections.forEach(s => {
+    if (window.scrollY >= s.offsetTop - 120) current = s.id;
+  });
+  navLinks.forEach(l => {
+    l.classList.remove('active');
+    if (l.getAttribute('href') === '#'+current) l.classList.add('active');
+  });
+});
+</script>
+</body>
+</html>
