@@ -580,6 +580,161 @@
 </head>
 <body>
 
+<!-- ── PASSWORD GATE ─────────────────────────────────────────── -->
+<div id="passwordGate" style="
+  position:fixed; inset:0; z-index:9999;
+  background:#191919;
+  display:flex; flex-direction:column;
+  align-items:center; justify-content:center;
+  font-family:'Figtree',sans-serif;
+">
+  <!-- bg texture -->
+  <div style="position:absolute;inset:0;background:radial-gradient(ellipse at 30% 60%, rgba(229,34,23,0.06) 0%, transparent 60%);pointer-events:none;"></div>
+
+  <!-- card -->
+  <div style="
+    position:relative;
+    background:#222222;
+    border:1px solid rgba(255,255,255,0.07);
+    border-radius:12px;
+    padding:48px 48px 40px;
+    width:100%;
+    max-width:420px;
+    box-shadow:0 32px 64px rgba(0,0,0,0.5);
+  ">
+    <!-- logo -->
+    <div style="margin-bottom:32px;text-align:left;">
+      <img src="https://mocainteractive.com/assets/svg/logo-light.svg" alt="Moca Interactive" style="height:28px;">
+    </div>
+
+    <!-- heading -->
+    <div style="font-size:10px;font-weight:700;letter-spacing:.12em;color:#E52217;text-transform:uppercase;margin-bottom:8px;">Documento Riservato</div>
+    <h1 style="font-size:22px;font-weight:800;color:#FFFFFF;text-transform:uppercase;letter-spacing:-.01em;margin:0 0 8px;">Report SEO<br>Primadonna Collection</h1>
+    <p style="font-size:12px;color:#888;margin:0 0 32px;line-height:1.6;">Inserisci la password per accedere al documento.</p>
+
+    <!-- input -->
+    <div style="position:relative;margin-bottom:12px;">
+      <input
+        id="pwdInput"
+        type="password"
+        placeholder="Password"
+        autocomplete="current-password"
+        style="
+          width:100%;
+          background:#2C2C2C;
+          border:1.5px solid rgba(255,255,255,0.1);
+          border-radius:7px;
+          padding:13px 48px 13px 16px;
+          font-family:'Figtree',sans-serif;
+          font-size:14px;
+          color:#FFFFFF;
+          outline:none;
+          box-sizing:border-box;
+          transition:border-color .2s;
+        "
+        oninput="document.getElementById('pwdError').style.opacity='0'"
+        onkeydown="if(event.key==='Enter')checkPassword()"
+        onfocus="this.style.borderColor='rgba(229,34,23,0.6)'"
+        onblur="this.style.borderColor='rgba(255,255,255,0.1)'"
+      >
+      <!-- eye toggle -->
+      <button onclick="togglePwd()" tabindex="-1" style="
+        position:absolute;right:14px;top:50%;transform:translateY(-50%);
+        background:none;border:none;cursor:pointer;padding:0;
+        color:#666;font-size:16px;line-height:1;
+      " id="eyeBtn">&#128065;</button>
+    </div>
+
+    <!-- error msg -->
+    <div id="pwdError" style="
+      font-size:11px;color:#E52217;font-weight:600;
+      margin-bottom:16px;opacity:0;transition:opacity .2s;
+      min-height:16px;
+    ">Password non corretta. Riprova.</div>
+
+    <!-- submit button -->
+    <button onclick="checkPassword()" style="
+      width:100%;
+      background:#E52217;
+      color:#fff;
+      border:none;
+      border-radius:7px;
+      padding:14px;
+      font-family:'Figtree',sans-serif;
+      font-size:13px;
+      font-weight:800;
+      text-transform:uppercase;
+      letter-spacing:.08em;
+      cursor:pointer;
+      transition:background .2s, transform .1s;
+    "
+    onmouseover="this.style.background='#C41D13'"
+    onmouseout="this.style.background='#E52217'"
+    onmousedown="this.style.transform='scale(0.98)'"
+    onmouseup="this.style.transform='scale(1)'"
+    >Accedi al Report</button>
+
+    <!-- divider + footer -->
+    <div style="margin-top:32px;padding-top:20px;border-top:1px solid rgba(255,255,255,0.06);text-align:center;">
+      <p style="font-size:10px;color:#555;margin:0;line-height:1.6;">
+        Documento riservato · Moca Interactive per Primadonna Collection<br>
+        Per richiedere l'accesso: <a href="mailto:info@mocainteractive.com" style="color:#888;text-decoration:none;">info@mocainteractive.com</a>
+      </p>
+    </div>
+  </div>
+</div>
+
+<script>
+(function() {
+  // Hash the stored password to avoid plain-text exposure in source
+  // SHA-256 of "primadonna.moca2026"
+  const HASH = '33ff5c8ae03f026b5746b4ad971e9b38f02cb6babb56936321bba31b69c56513';
+
+  async function sha256(str) {
+    const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+    return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+  }
+
+  // Check session storage so password isn't re-asked on refresh
+  if (sessionStorage.getItem('moca_auth') === '1') {
+    document.getElementById('passwordGate').style.display = 'none';
+    document.getElementById('passwordGate').remove();
+  }
+
+  window.checkPassword = async function() {
+    const val = document.getElementById('pwdInput').value;
+    const hash = await sha256(val);
+    if (hash === HASH) {
+      sessionStorage.setItem('moca_auth', '1');
+      const gate = document.getElementById('passwordGate');
+      gate.style.transition = 'opacity .4s';
+      gate.style.opacity = '0';
+      setTimeout(() => gate.remove(), 400);
+    } else {
+      const err = document.getElementById('pwdError');
+      err.style.opacity = '1';
+      const input = document.getElementById('pwdInput');
+      input.style.borderColor = '#E52217';
+      input.style.animation = 'shake .3s';
+      setTimeout(() => { input.style.animation = ''; input.style.borderColor = 'rgba(255,255,255,0.1)'; }, 600);
+    }
+  };
+
+  window.togglePwd = function() {
+    const i = document.getElementById('pwdInput');
+    i.type = i.type === 'password' ? 'text' : 'password';
+  };
+})();
+</script>
+
+<style>
+@keyframes shake {
+  0%,100%{transform:translateX(0)}
+  20%,60%{transform:translateX(-6px)}
+  40%,80%{transform:translateX(6px)}
+}
+</style>
+
 <!-- ── SIDEBAR ─────────────────────────────────────────────── -->
 <nav class="sidebar">
   <div class="sidebar-logo">
